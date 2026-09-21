@@ -1,0 +1,43 @@
+#!@PYTHON@
+
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Copyright 2024-2025 kramo
+
+import gettext
+import locale
+import signal
+import sys
+from pathlib import Path
+from platform import system
+
+pkgdatadir = "@pkgdatadir@"
+localedir = "@localedir@"
+
+sys.path.insert(1, pkgdatadir)
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+if system() == "Linux":
+    locale.bindtextdomain("@BIN_NAME@", localedir)
+    locale.textdomain("@BIN_NAME@")
+    gettext.install("@BIN_NAME@", localedir)
+else:
+    gettext.install("@BIN_NAME@")
+
+if __name__ == "__main__":
+    import gi
+
+    gi.require_version("Gtk", "4.0")
+
+    from gi.repository import Gio, GLib, Gtk
+
+    GLib.set_prgname("@BIN_NAME@")
+    GLib.set_application_name(_("Video Player"))
+    Gtk.Window.set_default_icon_name("@APP_ID@")
+
+    Gio.resources_register(
+        Gio.Resource.load(str(Path(pkgdatadir, "showtime.gresource")))
+    )
+
+    from showtime import main
+
+    sys.exit(main.main())
